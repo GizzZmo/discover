@@ -27,6 +27,7 @@
 #include "../libdiscover/utils.h"
 #include "updatessettings.h"
 #include <chrono>
+#include <qdbusconnectioninterface.h>
 
 using namespace std::chrono_literals;
 
@@ -121,13 +122,7 @@ bool DiscoverNotifier::notifyAboutUpdates() const
     m_settings->setLastNotificationTime(QDateTime::currentDateTimeUtc());
     m_settings->save();
 
-    auto method = QDBusMessage::createMethodCall(QStringLiteral("org.kde.discover"),
-                                                 QStringLiteral("/"),
-                                                 QStringLiteral("org.freedesktop.DBus.Peer"),
-                                                 QStringLiteral("Ping"));
-    auto call = QDBusConnection::sessionBus().asyncCall(method);
-    call.waitForFinished();
-    if (call.isValid()) {
+    if (QDBusConnection::sessionBus().interface()->isServiceRegistered(QStringLiteral("org.kde.discover"))) {
         return false;
     }
     return true;
